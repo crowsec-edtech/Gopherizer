@@ -16,7 +16,7 @@ class Zabbix:
         package = b""
         package += protocol_header.encode()
         package += protocol_flags.encode()
-        package += struct.pack("<Q", len(data) + 2)
+        package += struct.pack("<II", len(data) + 2, 0) # data length + 2 bytes to include CRLF
         package += data.encode()
 
         return package
