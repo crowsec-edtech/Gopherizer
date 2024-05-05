@@ -1,11 +1,14 @@
 #!/usr/bin/python3
 
-import argparse
+import argparse, os
 from importlib import import_module
 from pathlib import Path
 
 def load_tools(subparsers):
-    for filename in Path("tools").glob("[a-z]*.py"):
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    tools_dir_path = f"{current_dir}/tools"
+
+    for filename in Path(tools_dir_path).glob("[a-z]*.py"):
         module_name = filename.stem
         module = import_module(f"tools.{module_name}")
         for name in dir(module):
