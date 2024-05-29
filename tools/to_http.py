@@ -29,7 +29,7 @@ class ToHttp:
         return request
 
     def encode(self, request: str) -> str:
-        return quote_plus(request)
+        return quote_plus(request).replace("+", "%20")
 
     def run(self, args) -> str:
         url_parsed = parse.urlsplit(args.url)
